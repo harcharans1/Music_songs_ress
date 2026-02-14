@@ -1,33 +1,560 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>My Music App</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoundCloud Simple Clone</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: #f2f2f2;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff7700;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 400px;
+            margin: 0 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: none;
+            outline: none;
+        }
+
+        .nav-buttons button {
+            background-color: #ff7700;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .nav-buttons button:hover {
+            background-color: #e06600;
+        }
+
+        /* Main content - Track list */
+        .container {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            margin-bottom: 100px; /* space for fixed player */
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .track-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .track-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .track-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .track-card img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+        }
+
+        .track-info {
+            padding: 10px;
+        }
+
+        .track-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .track-artist {
+            font-size: 0.9rem;
+            color: #777;
+            margin-bottom: 8px;
+        }
+
+        .play-btn {
+            background-color: #ff7700;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+
+        .play-btn:hover {
+            background-color: #e06600;
+        }
+
+        /* Fixed Bottom Player */
+        .player-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #282828;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 150px;
+        }
+
+        .player-info img {
+            width: 50px;
+            height: 50px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .player-info div {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player-info .track-title {
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .player-info .track-artist {
+            color: #aaa;
+            font-size: 0.8rem;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .player-controls button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .player-controls button:hover {
+            background-color: #404040;
+        }
+
+        .progress-area {
+            flex: 2;
+            min-width: 200px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 5px;
+            background-color: #535353;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: #ff7700;
+            border-radius: 5px;
+            width: 0%;
+        }
+
+        .time {
+            font-size: 0.8rem;
+            color: #bbb;
+        }
+
+        .volume-area {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            min-width: 100px;
+        }
+
+        .volume-area i {
+            color: white;
+        }
+
+        .volume-slider {
+            width: 80px;
+            height: 5px;
+            background-color: #535353;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .volume-level {
+            height: 100%;
+            background-color: #ff7700;
+            border-radius: 5px;
+            width: 70%;
+        }
+
+        /* Responsive */
+        @media (max-width: 700px) {
+            .player-bar {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 10px;
+            }
+
+            .player-info, .player-controls, .progress-area, .volume-area {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .progress-area {
+                order: 2;
+            }
+
+            .player-controls {
+                order: 1;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">SimpleCloud</div>
+        <div class="search-bar">
+            <input type="text" placeholder="Search for tracks...">
+        </div>
+        <div class="nav-buttons">
+            <button>Sign in</button>
+            <button>Upload</button>
+        </div>
+    </nav>
 
-  <header>
-    <h1>🎵 My Music App</h1>
-  </header>
-
-  <div class="music-container">
-    <div class="music-card">
-      <img src="https://via.placeholder.com/150" alt="Song Cover">
-      <h3>Sample Song 1</h3>
-      <audio controls>
-        <source src="sample1.mp3" type="audio/mp3">
-      </audio>
+    <!-- Main content -->
+    <div class="container">
+        <h2>Recommended Tracks</h2>
+        <div class="track-grid" id="trackGrid">
+            <!-- Tracks will be dynamically generated from JavaScript -->
+        </div>
     </div>
 
-    <div class="music-card">
-      <img src="https://via.placeholder.com/150" alt="Song Cover">
-      <h3>Sample Song 2</h3>
-      <audio controls>
-        <source src="sample2.mp3" type="audio/mp3">
-      </audio>
-    </div>
-  </div>
+    <!-- Fixed Bottom Player -->
+    <div class="player-bar" id="playerBar">
+        <div class="player-info" id="playerInfo">
+            <img src="https://via.placeholder.com/50/333/fff?text=No+Cover" alt="cover" id="playerCover">
+            <div>
+                <span class="track-title" id="playerTrackTitle">Select a track</span>
+                <span class="track-artist" id="playerTrackArtist">-</span>
+            </div>
+        </div>
 
+        <div class="player-controls">
+            <button id="prevBtn"><i class="fas fa-step-backward"></i></button>
+            <button id="playPauseBtn"><i class="fas fa-play"></i></button>
+            <button id="nextBtn"><i class="fas fa-step-forward"></i></button>
+        </div>
+
+        <div class="progress-area">
+            <span class="time" id="currentTime">0:00</span>
+            <div class="progress-bar" id="progressBar">
+                <div class="progress" id="progress"></div>
+            </div>
+            <span class="time" id="duration">0:00</span>
+        </div>
+
+        <div class="volume-area">
+            <i class="fas fa-volume-up"></i>
+            <div class="volume-slider" id="volumeSlider">
+                <div class="volume-level" id="volumeLevel" style="width: 70%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample track data (you can replace with your own)
+        const tracks = [
+            {
+                id: 1,
+                title: "Sunset Vibes",
+                artist: "Artist One",
+                cover: "https://via.placeholder.com/200/ff7700/fff?text=Sunset",
+                audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+            },
+            {
+                id: 2,
+                title: "Midnight Drive",
+                artist: "Artist Two",
+                cover: "https://via.placeholder.com/200/333/fff?text=Midnight",
+                audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
+            },
+            {
+                id: 3,
+                title: "Ocean Waves",
+                artist: "Artist Three",
+                cover: "https://via.placeholder.com/200/0066cc/fff?text=Ocean",
+                audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
+            },
+            {
+                id: 4,
+                title: "Mountain High",
+                artist: "Artist Four",
+                cover: "https://via.placeholder.com/200/228B22/fff?text=Mountain",
+                audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"
+            },
+            {
+                id: 5,
+                title: "Urban Beat",
+                artist: "Artist Five",
+                cover: "https://via.placeholder.com/200/800080/fff?text=Urban",
+                audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3"
+            },
+            {
+                id: 6,
+                title: "Chill Session",
+                artist: "Artist Six",
+                cover: "https://via.placeholder.com/200/FFA500/fff?text=Chill",
+                audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3"
+            }
+        ];
+
+        // DOM elements
+        const trackGrid = document.getElementById('trackGrid');
+        const audio = new Audio();
+        let currentTrackIndex = 0;
+        let isPlaying = false;
+
+        // Player elements
+        const playerCover = document.getElementById('playerCover');
+        const playerTrackTitle = document.getElementById('playerTrackTitle');
+        const playerTrackArtist = document.getElementById('playerTrackArtist');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playPauseIcon = playPauseBtn.querySelector('i');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progress = document.getElementById('progress');
+        const currentTimeSpan = document.getElementById('currentTime');
+        const durationSpan = document.getElementById('duration');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeLevel = document.getElementById('volumeLevel');
+
+        // Initialize track grid
+        function renderTracks() {
+            trackGrid.innerHTML = '';
+            tracks.forEach((track, index) => {
+                const card = document.createElement('div');
+                card.className = 'track-card';
+                card.innerHTML = `
+                    <img src="${track.cover}" alt="${track.title}">
+                    <div class="track-info">
+                        <div class="track-title">${track.title}</div>
+                        <div class="track-artist">${track.artist}</div>
+                        <button class="play-btn" data-index="${index}"><i class="fas fa-play"></i> Play</button>
+                    </div>
+                `;
+                card.querySelector('.play-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const idx = e.currentTarget.dataset.index;
+                    playTrack(parseInt(idx));
+                });
+                trackGrid.appendChild(card);
+            });
+        }
+
+        // Play track by index
+        function playTrack(index) {
+            if (index < 0 || index >= tracks.length) return;
+            currentTrackIndex = index;
+            const track = tracks[currentTrackIndex];
+            audio.src = track.audio;
+            audio.load();
+            audio.play().then(() => {
+                isPlaying = true;
+                playPauseIcon.className = 'fas fa-pause';
+                updatePlayerInfo();
+            }).catch(err => console.log('Playback failed:', err));
+        }
+
+        // Update bottom player info
+        function updatePlayerInfo() {
+            const track = tracks[currentTrackIndex];
+            playerCover.src = track.cover;
+            playerTrackTitle.textContent = track.title;
+            playerTrackArtist.textContent = track.artist;
+        }
+
+        // Play/Pause toggle
+        function togglePlayPause() {
+            if (audio.src === '') {
+                // No track selected, play first
+                playTrack(0);
+                return;
+            }
+            if (isPlaying) {
+                audio.pause();
+                playPauseIcon.className = 'fas fa-play';
+            } else {
+                audio.play();
+                playPauseIcon.className = 'fas fa-pause';
+            }
+            isPlaying = !isPlaying;
+        }
+
+        // Next track
+        function nextTrack() {
+            let nextIndex = (currentTrackIndex + 1) % tracks.length;
+            playTrack(nextIndex);
+        }
+
+        // Previous track
+        function prevTrack() {
+            let prevIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+            playTrack(prevIndex);
+        }
+
+        // Update progress bar and time
+        function updateProgress() {
+            if (audio.duration) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progress.style.width = percent + '%';
+                currentTimeSpan.textContent = formatTime(audio.currentTime);
+                durationSpan.textContent = formatTime(audio.duration);
+            }
+        }
+
+        // Format time in mm:ss
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Seek when clicking on progress bar
+        function seek(e) {
+            const rect = progressBar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            const seekTime = (clickX / width) * audio.duration;
+            audio.currentTime = seekTime;
+        }
+
+        // Volume control
+        function setVolume(e) {
+            const rect = volumeSlider.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            let vol = clickX / width;
+            vol = Math.max(0, Math.min(1, vol));
+            audio.volume = vol;
+            volumeLevel.style.width = (vol * 100) + '%';
+        }
+
+        // Event listeners
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        audio.addEventListener('timeupdate', updateProgress);
+        audio.addEventListener('ended', nextTrack);
+        audio.addEventListener('loadedmetadata', () => {
+            durationSpan.textContent = formatTime(audio.duration);
+        });
+
+        progressBar.addEventListener('click', seek);
+        volumeSlider.addEventListener('click', setVolume);
+
+        // When track changes, update player info and play
+        audio.addEventListener('play', () => {
+            isPlaying = true;
+            playPauseIcon.className = 'fas fa-pause';
+        });
+        audio.addEventListener('pause', () => {
+            isPlaying = false;
+            playPauseIcon.className = 'fas fa-play';
+        });
+
+        // Initialize volume
+        audio.volume = 0.7;
+
+        // Render tracks on page load
+        renderTracks();
+
+        // Optional: load first track into player but don't play
+        if (tracks.length > 0) {
+            currentTrackIndex = 0;
+            updatePlayerInfo();
+        }
+    </script>
 </body>
 </html>
